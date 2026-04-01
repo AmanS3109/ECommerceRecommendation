@@ -4,28 +4,28 @@ An end-to-end, GPU-accelerated recommendation microservice built from scratch us
 
 This project implements a custom Bayesian Personalized Ranking (BPR) matrix factorization engine. By abandoning black-box libraries (like LightFM) and writing the linear algebra natively in JAX, the system achieves highly optimized training on NVIDIA GPUs via XLA compilation, and serves personalized recommendations in <35ms via vectorized NumPy inference.
 
-## ✨ Key Engineering Highlights
+## Key Engineering Highlights
 
 *   **Mathematical Engine:** Custom BPR loss function implemented in pure JAX, optimizing latent item/user embeddings through lock-free Stochastic Gradient Descent (Optax/Adam).
 *   **Memory Optimization:** Engineered a highly efficient data pipeline translating 100k+ sparse string UUIDs into contiguous integer arrays, compressing gigabytes of relational e-commerce tables into lightweight memory footprints.
 *   **Low-Latency Inference:** Achieved sub-35ms API response times (single CPU core) by utilizing raw $O(1)$ memory lookups, vectorized dot products, and real-time metadata hydration.
 *   **Novelty Filtering:** Post-processing layer mathematically filters historical purchases ($-\infty$ scoring) in real-time, preventing the "recommending the past" trap.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 *   **ML Engine:** JAX, Optax, NumPy, SciPy
 *   **Data Engineering:** Pandas
 *   **API / Serving:** FastAPI, Uvicorn
 *   **Dataset:** Olist Brazilian E-Commerce Dataset (95k+ Users, 32k+ Items)
 
-## 🏗 System Architecture
+## System Architecture
 
 *   **Data Pipeline (`prep_data.py`):** Ingests relational CSVs, performs entity resolution, maps UUIDs to dense continuous integers, and exports raw math matrices.
 *   **Metadata Hydration (`export_metadata.py`):** Extracts human-readable product categories and maps them identically to the integer matrices for $O(1)$ API lookups.
 *   **Training Loop (`train.py`):** Uses JAX `@jax.jit` JIT compilation to calculate gradients. Dynamically generates negative samples and optimizes $P$ (User) and $Q$ (Item) matrices over $N$ epochs.
 *   **API Gateway (`api.py`):** Loads optimized matrices into server RAM. Receives user ID, computes vector dot products against the entire 32k+ catalog, filters history, and returns top $K$ hydrated results.
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### 1. Environment (WSL2 / Linux Recommended)
 
@@ -47,7 +47,7 @@ pip install -U "jax[cuda12]"
 
 Download the Olist Dataset from Kaggle, extract the .zip, and place the CSVs inside a `data/` directory at the root of this project.
 
-## 💻 Usage
+## Usage
 
 Run the pipeline sequentially:
 
@@ -78,7 +78,7 @@ Outputs: `data/trained_P.npy`, `data/trained_Q.npy`
 uvicorn src.api:app --reload
 ```
 
-## 📡 API Reference
+## API Reference
 
 `GET /recommend/{user_idx}?top_k=10`
 
